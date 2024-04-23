@@ -1,0 +1,47 @@
+.container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  
+}
+
+.grid-item {
+  background-color: #030115; /* Dark blue background or */
+  border: 0.5px solid #0f056b; /* night blue border */
+  padding: 10px;
+  display: inline-block;
+  margin: -3px;
+}
+
+.grid-item.full {
+  background-color: #FFFFFFFF;
+  border: 0.5px solid #0f056b; /* night blue border */
+  padding: 10px;
+  display: inline-block;
+  margin: -3px;
+}
+
+.border {
+  padding: 10px;
+  display: inline-block;
+  margin: -3px;
+  background-color: #000000;
+  
+}
+
+/*
+.ground {
+  padding: 10px;
+  display: inline-block;
+  margin: -3px;
+  background-color: #FFD700;
+
+}
+*/
+
+.line {
+  
+  
+  
+}
