@@ -1,8 +1,8 @@
-###Localhosted Tetris
+#Localhosted Tetris
 
 ##Requirements :
 
-#You need to install Flask in order to get this program run, try this if you don't know whether flask is installed or not :
+###You need to install Flask in order to get this program run, try this if you don't know whether flask is installed or not :
 
 - Go into your command prompt
 - Enter this command : pip show flask
