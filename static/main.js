@@ -142,7 +142,6 @@ function RandInt(max) {
 }
 
 function sleep(ms) {
-  console.log("test sleep");
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
@@ -219,8 +218,6 @@ class Grid {
 
         this.emptycell(this.xyToIndex(pixel));// 'éteint' le pixel actuel
         pixel[1]++;
-        console.log('y_counter', this.y_counter)
-        console.log(`y randpiece ${randPiece[0]}`);
 
       }
       
@@ -230,23 +227,94 @@ class Grid {
     return randPiece
 
   }
+
+  can_move(randPiece){//retourne un booléen true si on peut bouger la pièce et flase sinon
+
+    let collision;
+    for (let pixel of randPiece){
+      console.log("deuxième condition : ",this.xyToIndex(pixel) < 210)
+      if(this.xyToIndex(pixel) > 210){
+
+        return Boolean(false)
+
+      } else if(this.piece_around(pixel,randPiece)){
+
+        return Boolean(false)
+
+      } else {
+
+        collision = Boolean(true)
+
+      }
+    }
+    return collision
+
+  }
+
+  piece_around(pixel,randPiece){//retourne un booléen true si il y a une pièce autour et false sinon C4EST ICI QUE SA MERDE TROUDUC VA TE COUCHER MAINTENANT
+    
+    const new_pixel = pixel
+    console.log('pixel :',pixel)
+
+    new_pixel[1] += 1
+
+    console.log('new_pixel :',this.xyToIndex(new_pixel))
+    console.log('dans la liste ? :',!randPiece.includes(new_pixel) )
+    console.log('case remplie ? :',this.cells[this.xyToIndex(new_pixel)].classList == 'grid-item full' )
+    console.log('piece autour ? :',!randPiece.includes(new_pixel) || this.cells[this.xyToIndex(new_pixel)].classList == 'grid-item full')
+    if(!randPiece.includes(new_pixel) && this.cells[this.xyToIndex(new_pixel)].classList == 'grid-item full' ) {// || = or | ! = not ("not in" in that case with includes) | and = &&
+
+    new_pixel[1] -= 1
+  
+    return Boolean(true)
+
+    } else {
+    
+    new_pixel[1] -= 1
+
+    return Boolean(false)
+
+    }
+  }
 }
 
 async function main() {
-  
+   
  await sleep(1500);//j'ai mis ça la parce que la page met du temps à se charger et le temps qu'elle se charge la piece est déja descendu de deux lignes sans
  const grille = new Grid();
  var randPiece = grille.pieces.liste_pieces[RandInt(6)];
  var n = 21;
+ console.log(grille.cells[6].classList == 'grid-item')
   
-  while (n > 0) {
+  while (grille.can_move(randPiece[0])) {
     await grille.affichePiece(randPiece[0]);
+    console.log(randPiece[0][0])
+    console.log('Fonction canmove : ', grille.can_move(randPiece[0]))
     await sleep(200);
     grille.y_counter += 1 ;
     randPiece = grille.y_piece_modif(randPiece);
     console.log("randPiece :",randPiece);
     await grille.affichePiece(randPiece[0]);
     var n = n - 1;
+    console.log(grille.cells[6].classList == 'grid-item')
+    await sleep(200);
+  }
+
+  var randPiece = grille.pieces.liste_pieces[RandInt(6)];
+  var n = 21;
+  console.log(grille.cells[6].classList == 'grid-item')
+
+  while (grille.can_move(randPiece[0])) {
+    await grille.affichePiece(randPiece[0]);
+    console.log(randPiece[0][0])
+    console.log('Fonction canmove : ', grille.can_move(randPiece[0]))
+    await sleep(200);
+    grille.y_counter += 1 ;
+    randPiece = grille.y_piece_modif(randPiece);
+    console.log("randPiece :",randPiece);
+    await grille.affichePiece(randPiece[0]);
+    var n = n - 1;
+    console.log(grille.cells[6].classList == 'grid-item')
     await sleep(200);
   }
   //affiche la première forme d'une piece au piff dans la liste 
