@@ -167,6 +167,7 @@ class Grid {
   emptycell(index) {
     // la méthode de "vidage" de case
     console.log(`vider ici : ${index}`);
+    console.log(`classe :`,this.cells[index].classList);
     this.cells[index].classList.remove("full");
     console.log(this.cells[index].outerHTML);
   }
@@ -231,47 +232,52 @@ class Grid {
   can_move(randPiece){//retourne un booléen true si on peut bouger la pièce et flase sinon
 
     let collision;
+    let list_of_index = [];
+    console.log('liste randPiece:',randPiece);
+
+    for(let index of randPiece){
+      
+      list_of_index.push(this.xyToIndex(index));
+
+    }
+    console.log('liste d\'index de randPiece:',list_of_index);
+
     for (let pixel of randPiece){
-      console.log("deuxième condition : ",this.xyToIndex(pixel) < 210)
       if(this.xyToIndex(pixel) > 210){
 
-        return Boolean(false)
+        return Boolean(false);
 
-      } else if(this.piece_around(pixel,randPiece)){
+      } else if(this.piece_around(pixel,list_of_index)){
 
-        return Boolean(false)
+        return Boolean(false);
 
       } else {
 
-        collision = Boolean(true)
+        collision = Boolean(true);
 
       }
     }
-    return collision
+    return collision;
 
   }
 
-  piece_around(pixel,randPiece){//retourne un booléen true si il y a une pièce autour et false sinon C4EST ICI QUE SA MERDE TROUDUC VA TE COUCHER MAINTENANT
+  piece_around(pixel,list_of_index){//retourne un booléen true si il y a une pièce autour et false sinon
     
-    const new_pixel = pixel
-    console.log('pixel :',pixel)
+    const new_pixel = pixel;
+    console.log('pixel :',pixel);
 
-    new_pixel[1] += 1
+    new_pixel[1] += 1;
 
-    console.log('new_pixel :',this.xyToIndex(new_pixel))
-    console.log('dans la liste ? :',!randPiece.includes(new_pixel) )
-    console.log('case remplie ? :',this.cells[this.xyToIndex(new_pixel)].classList == 'grid-item full' )
-    console.log('piece autour ? :',!randPiece.includes(new_pixel) || this.cells[this.xyToIndex(new_pixel)].classList == 'grid-item full')
-    if(!randPiece.includes(new_pixel) && this.cells[this.xyToIndex(new_pixel)].classList == 'grid-item full' ) {// || = or | ! = not ("not in" in that case with includes) | and = &&
+    if(!list_of_index.includes(this.xyToIndex(new_pixel)) && this.cells[this.xyToIndex(new_pixel)].classList == 'grid-item full' ) {// || = or | ! = not ("not in" in that case with includes) | and = &&
 
-    new_pixel[1] -= 1
-  
-    return Boolean(true)
+    new_pixel[1] -= 1;
+    console.log('c\'est bon')
+    return Boolean(true);
 
     } else {
     
     new_pixel[1] -= 1
-
+    console.log('c\'est pas bon')
     return Boolean(false)
 
     }
@@ -302,11 +308,9 @@ async function main() {
 
   var randPiece = grille.pieces.liste_pieces[RandInt(6)];
   var n = 21;
-  console.log(grille.cells[6].classList == 'grid-item')
 
   while (grille.can_move(randPiece[0])) {
     await grille.affichePiece(randPiece[0]);
-    console.log(randPiece[0][0])
     console.log('Fonction canmove : ', grille.can_move(randPiece[0]))
     await sleep(200);
     grille.y_counter += 1 ;
