@@ -6,6 +6,9 @@ document.head.appendChild(script);
 */
 //import { Pieces } from './matrice_piece.js';
 
+let grille; // Déclaration de la variable grille
+let randPiece; // Déclaration de la variable randPiece
+
 class Pieces {
   constructor() {
     this.liste_pieces = [
@@ -171,23 +174,6 @@ class Grid {
     this.cells[index].classList.remove("full");
     console.log(this.cells[index].outerHTML);
   }
-
-  async parcours() {
-    // fonction asynchrone sinon le sleep marche pas
-
-    for (let cell in this.cells) {
-      this.fillcell(cell);
-      await sleep(20); // await c'est pour pas que le reste s'execute
-      this.emptycell(cell);
-      console.log("cell : %d", cell);
-    }
-  };
-
-  cellules() { // c du débugguage 
-    console.log(`tabl de cellule : ${this.cells}`);
-    console.log(`taille tabl de cellule : ${this.cells.length}`);
-    console.log(`test : ${this.height * this.width}`);
-  };
   
   xyToIndex(xy) {// converti coordonnées en index
     let index = -1;
@@ -212,24 +198,19 @@ class Grid {
 
   }
 
-  y_piece_modif(randPiece){
-
-    for  (let forme of randPiece){
-      for (let pixel of forme){
-
-        this.emptycell(this.xyToIndex(pixel));// 'éteint' le pixel actuel
-        pixel[1]++;
-
-      }
-      
+y_piece_modif(randPiece) {
+    for (let forme of randPiece) {
+        for (let pixel of forme) {
+            if (pixel[1] < this.height - 1) {
+                this.emptycell(this.xyToIndex(pixel)); // 'éteint' le pixel actuel
+                pixel[1]++;
+            }
+        }
     }
-      
-    
-    return randPiece
+    return randPiece;
+}
 
-  }
-
-  can_move(randPiece){//retourne un booléen true si on peut bouger la pièce et flase sinon
+  can_move(randPiece){ //retourne un booléen true si on peut bouger la pièce et flase sinon
 
     let collision;
     let list_of_index = [];
@@ -243,7 +224,7 @@ class Grid {
     console.log('liste d\'index de randPiece:',list_of_index);
 
     for (let pixel of randPiece){
-      if(this.xyToIndex(pixel) > 210){
+      if(this.xyToIndex(pixel) > 209){
 
         return Boolean(false);
 
@@ -261,69 +242,159 @@ class Grid {
 
   }
 
-  piece_around(pixel,list_of_index){//retourne un booléen true si il y a une pièce autour et false sinon
-    
-    const new_pixel = pixel;
-    console.log('pixel :',pixel);
+  piece_around(pixel,list_of_index){ //retourne un booléen true si il y a une pièce autour et false sinon
 
-    new_pixel[1] += 1;
+    pixel[1] += 1;
 
-    if(!list_of_index.includes(this.xyToIndex(new_pixel)) && this.cells[this.xyToIndex(new_pixel)].classList == 'grid-item full' ) {// || = or | ! = not ("not in" in that case with includes) | and = &&
+    if(!list_of_index.includes(this.xyToIndex(pixel)) && this.cells[this.xyToIndex(pixel)].classList == 'grid-item full' ) {// || = or | ! = not ("not in" in that case with includes) | and = &&
 
-    new_pixel[1] -= 1;
+    pixel[1] -= 1;
     console.log('c\'est bon')
     return Boolean(true);
 
     } else {
     
-    new_pixel[1] -= 1
+    pixel[1] -= 1
     console.log('c\'est pas bon')
     return Boolean(false)
 
     }
   }
+  
+  canMoveLeft(piece) {
+    for (let pixel of piece) {
+      if (pixel[0] <= 0 || this.isCellFull(pixel[0] - 1, pixel[1])) {
+        return false;
+      }
+    }
+    return true;
+  }
+  
+  canMoveRight(piece) {
+    for (let pixel of piece) {
+      if (pixel[0] >= 9 || this.isCellFull(pixel[0] + 1, pixel[1])) {
+        return false;
+      }
+    }
+    return true;
+  }
+  
+  isCellFull(x, y) {
+    const index = this.xyToIndex([x, y]);
+    //console.log('x:', x, 'y:', y, 'index:', index);
+    //console.log('classList:', this.cells[index].classList);
+    return this.cells[index].classList.contains('grid-item full');
+  }
+  
+  clear_blocks(){
+
+  for (var y = 0; y < 22;y++) {
+
+    let line = 0;
+
+    for (var x = 0; x < 10;x++) {
+
+      let index = [x,y];
+      console.log('xy : ',x,y);
+      if(this.cells[this.xyToIndex(index)].classList == 'grid-item full'){
+
+        line ++;
+
+      } 
+
+      console.log('case remplie ? : ',this.cells[this.xyToIndex(index)].classList == 'grid-item full');
+      if(line == 10){
+        
+
+        for (var i = 0; i < 10; i++ ){
+          console.log('in dex i et y : ',this.xyToIndex([i,y]));
+          this.emptycell(this.xyToIndex([i,y]));
+
+        }
+
+        for (var k = 0; k < y;k++) {
+
+          for (var i = 0; i < 10; i++ ){
+            
+            if(this.cells[this.xyToIndex([i,k])].classList == 'grid-item full'){
+
+              this.emptycell(this.xyToIndex([i,k]));
+              this.fillcell(this.xyToIndex([i,k+1]));
+
+      
+            } 
+
+          }
+        }
+
+      }
+
+    }
+  }
+ }
+
 }
+
+function deplacement(e) {
+  switch (e.keyCode) {
+    case 37: // Touche gauche
+      deplacerGauche();
+      break;
+    case 39: // Touche droite
+      deplacerDroite();
+      break;
+  }
+}
+
+function deplacerGauche() {
+  if (grille.canMoveLeft(randPiece[0])) {
+    for (let i = 0; i < randPiece[0].length; i++) {
+      grille.emptycell(grille.xyToIndex(randPiece[0][i])); // Vide la cellule avant le déplacement
+      randPiece[0][i][0] -= 1;
+    }
+    grille.affichePiece(randPiece[0]);
+  }
+}
+
+function deplacerDroite() {
+  if (grille.canMoveRight(randPiece[0])) {
+    for (let i = 0; i < randPiece[0].length; i++) {
+      grille.emptycell(grille.xyToIndex(randPiece[0][i])); // Vide la cellule avant le déplacement
+      randPiece[0][i][0] += 1;
+    }
+    grille.affichePiece(randPiece[0]);
+  }
+}
+
+document.onkeydown = deplacement;
 
 async function main() {
    
- await sleep(1500);//j'ai mis ça la parce que la page met du temps à se charger et le temps qu'elle se charge la piece est déja descendu de deux lignes sans
- const grille = new Grid();
- var randPiece = grille.pieces.liste_pieces[RandInt(6)];
- var n = 21;
- console.log(grille.cells[6].classList == 'grid-item')
+   grille = new Grid(); // Initialisation de la grille
+   await sleep(1500); //j'ai mis ça la parce que la page met du temps à se charger et le temps qu'elle se charge la piece est déja descendu de deux lignes sans
   
-  while (grille.can_move(randPiece[0])) {
-    await grille.affichePiece(randPiece[0]);
-    console.log(randPiece[0][0])
-    console.log('Fonction canmove : ', grille.can_move(randPiece[0]))
-    await sleep(200);
-    grille.y_counter += 1 ;
-    randPiece = grille.y_piece_modif(randPiece);
-    console.log("randPiece :",randPiece);
-    await grille.affichePiece(randPiece[0]);
-    var n = n - 1;
-    console.log(grille.cells[6].classList == 'grid-item')
-    await sleep(200);
-  }
+  for (var count = 0; count < 40;count++) {
+    console.log('counter : ',count)
+    
+     randPiece = JSON.parse(JSON.stringify(grille.pieces.liste_pieces[RandInt(7)])); // Assignation de randPiece
+     console.log(grille.cells[6].classList == 'grid-item')
 
-  var randPiece = grille.pieces.liste_pieces[RandInt(6)];
-  var n = 21;
-
-  while (grille.can_move(randPiece[0])) {
-    await grille.affichePiece(randPiece[0]);
-    console.log('Fonction canmove : ', grille.can_move(randPiece[0]))
-    await sleep(200);
-    grille.y_counter += 1 ;
-    randPiece = grille.y_piece_modif(randPiece);
-    console.log("randPiece :",randPiece);
-    await grille.affichePiece(randPiece[0]);
-    var n = n - 1;
-    console.log(grille.cells[6].classList == 'grid-item')
-    await sleep(200);
+    while (grille.can_move(randPiece[0])) { 
+      await grille.affichePiece(randPiece[0]);
+      console.log(randPiece[0][0])
+      console.log('Fonction canmove : ', grille.can_move(randPiece[0]))
+      await sleep(200);
+      grille.y_counter += 1 ;
+      randPiece = grille.y_piece_modif(randPiece);
+      console.log("randPiece :",randPiece);
+      await grille.affichePiece(randPiece[0]);
+      
+      await sleep(200);
+    }
+    grille.clear_blocks()
   }
-  //affiche la première forme d'une piece au piff dans la liste 
-  
+   
 }
-//setI nterval(function () {location.reload()}, 8000);
+
 
 main();
