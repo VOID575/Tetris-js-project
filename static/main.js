@@ -8,6 +8,7 @@ document.head.appendChild(script);
 
 let grille; // Déclaration de la variable grille
 let randPiece; // Déclaration de la variable randPiece
+let currentForm = 0;
 
 class Pieces {
   constructor() {
@@ -158,6 +159,7 @@ class Grid {
     this.pieces = new Pieces();
     this.x_counter = 0;
     this.y_counter = 0;
+    this.currentForm = 0;
   }
 
   fillcell(index) {
@@ -187,43 +189,32 @@ class Grid {
       this.fillcell(this.xyToIndex(pixel));
       };
     };
-  
-  x_piece_state(randpiece){
 
-    for (let pixel of randpiece[0]) {
-      
-      pixel[0] += this.x_counter
-
-    }
-
+  y_piece_modif(randPiece) {
+          for (let pixel of randPiece[this.currentForm]) {
+              if (pixel[1] < this.height - 1) { // Si on est pas en bas
+                  this.emptycell(this.xyToIndex(pixel)); // 'éteint' le pixel actuel
+                  pixel[1]++;
+                  this.y_counter++;
+              }
+          }
+      return randPiece;
   }
 
-y_piece_modif(randPiece) {
-    for (let forme of randPiece) {
-        for (let pixel of forme) {
-            if (pixel[1] < this.height - 1) {
-                this.emptycell(this.xyToIndex(pixel)); // 'éteint' le pixel actuel
-                pixel[1]++;
-            }
-        }
-    }
-    return randPiece;
-}
-
-  can_move(randPiece){ //retourne un booléen true si on peut bouger la pièce et flase sinon
+  can_move(piece){ //retourne un booléen true si on peut bouger la pièce et flase sinon
 
     let collision;
     let list_of_index = [];
-    console.log('liste randPiece:',randPiece);
+    console.log('liste randPiece:',piece);
 
-    for(let index of randPiece){
+    for(let index of piece){
       
       list_of_index.push(this.xyToIndex(index));
 
     }
     console.log('liste d\'index de randPiece:',list_of_index);
 
-    for (let pixel of randPiece){
+    for (let pixel of piece){
       if(this.xyToIndex(pixel) > 209){
 
         return Boolean(false);
@@ -302,20 +293,21 @@ y_piece_modif(randPiece) {
 
       } 
 
-      console.log('case remplie ? : ',this.cells[this.xyToIndex(index)].classList == 'grid-item full');
+      //console.log('case remplie ? : ',this.cells[this.xyToIndex(index)].classList == 'grid-item full');
       if(line == 10){
         
 
         for (var i = 0; i < 10; i++ ){
-          console.log('in dex i et y : ',this.xyToIndex([i,y]));
+          //console.log('index i et y : ',this.xyToIndex([i,y]));
           this.emptycell(this.xyToIndex([i,y]));
 
         }
 
-        for (var k = 0; k < y;k++) {
+        for (var k = y; k > 0;k--) {
 
           for (var i = 0; i < 10; i++ ){
             
+            console.log("k,y et i",k,y,i)
             if(this.cells[this.xyToIndex([i,k])].classList == 'grid-item full'){
 
               this.emptycell(this.xyToIndex([i,k]));
@@ -337,33 +329,61 @@ y_piece_modif(randPiece) {
 
 function deplacement(e) {
   switch (e.keyCode) {
-    case 37: // Touche gauche
+    case 81: // Touche gauche
       deplacerGauche();
       break;
-    case 39: // Touche droite
+    case 83: // Touche droite
       deplacerDroite();
       break;
   }
 }
 
 function deplacerGauche() {
-  if (grille.canMoveLeft(randPiece[0])) {
-    for (let i = 0; i < randPiece[0].length; i++) {
+  if (grille.canMoveLeft(randPiece[grille.currentForm])) {
+    for (let i = 0; i < randPiece[grille.currentForm].length; i++) {
       grille.emptycell(grille.xyToIndex(randPiece[0][i])); // Vide la cellule avant le déplacement
-      randPiece[0][i][0] -= 1;
+      randPiece[grille.currentForm][i][0] -= 1;
     }
-    grille.affichePiece(randPiece[0]);
+    grille.affichePiece(randPiece[grille.currentForm]);
   }
 }
 
 function deplacerDroite() {
-  if (grille.canMoveRight(randPiece[0])) {
-    for (let i = 0; i < randPiece[0].length; i++) {
+  if (grille.canMoveRight(randPiece[grille.currentForm])) {
+    for (let i = 0; i < randPiece[grille.currentForm].length; i++) {
       grille.emptycell(grille.xyToIndex(randPiece[0][i])); // Vide la cellule avant le déplacement
-      randPiece[0][i][0] += 1;
+      randPiece[grille.currentForm][i][0] += 1;
     }
-    grille.affichePiece(randPiece[0]);
+    grille.affichePiece(randPiece[grille.currentForm]);
   }
+}
+let i=0;
+function rotation(e) {
+  switch (e.keyCode) {
+    case 37: // Touche flèche gauche
+      rotationGauche();
+      break;
+    case 39: // Touche flèche droite
+      rotationDroite();
+      break;
+  }
+}
+function rotationGauche() {
+  if (grille.currentForm > 0) {
+    grille.currentForm--;
+  } else {
+    grille.currentForm = randPiece.length - 1;
+  }
+  grille.affichePiece(randPiece[grille.currentForm]);
+}
+
+function rotationDroite() {
+  if (grille.currentForm < randPiece.length - 1) {
+    grille.currentForm++;
+  } else {
+    grille.currentForm = 0;
+  }
+  grille.affichePiece(randPiece[grille.currentForm]);
 }
 
 document.onkeydown = deplacement;
@@ -379,15 +399,17 @@ async function main() {
      randPiece = JSON.parse(JSON.stringify(grille.pieces.liste_pieces[RandInt(7)])); // Assignation de randPiece
      console.log(grille.cells[6].classList == 'grid-item')
 
-    while (grille.can_move(randPiece[0])) { 
-      await grille.affichePiece(randPiece[0]);
-      console.log(randPiece[0][0])
-      console.log('Fonction canmove : ', grille.can_move(randPiece[0]))
+    while (grille.can_move(randPiece[grille.currentForm])) { 
+      grille.y_counter = 0;
+      grille.x_counter = 0;
+      grille.currentForm = 0;
+      await grille.affichePiece(randPiece[grille.currentForm]);
+      //console.log(randPiece[0][0])
+      //console.log('Fonction canmove : ', grille.can_move(randPiece[0]))
       await sleep(200);
-      grille.y_counter += 1 ;
       randPiece = grille.y_piece_modif(randPiece);
       console.log("randPiece :",randPiece);
-      await grille.affichePiece(randPiece[0]);
+      await grille.affichePiece(randPiece[currentForm]);
       
       await sleep(200);
     }
