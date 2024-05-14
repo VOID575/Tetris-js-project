@@ -160,6 +160,7 @@ class Grid {
     this.x_counter = 0;
     this.y_counter = 0;
     this.currentForm = 0;
+    this.score = 0;
   }
 
   fillcell(index) {
@@ -191,15 +192,20 @@ class Grid {
     };
 
   y_piece_modif(randPiece) {
-          for (let pixel of randPiece[this.currentForm]) {
+          if (this.can_move(randPiece[this.currentForm])) {
+            for (let pixel of randPiece[this.currentForm]) {
               if (pixel[1] < this.height - 1) { // Si on est pas en bas
                   this.emptycell(this.xyToIndex(pixel)); // 'éteint' le pixel actuel
                   pixel[1]++;
                   this.y_counter++;
               }
           }
+
+      }
+            
       return randPiece;
-  }
+}
+
 
   can_move(piece){ //retourne un booléen true si on peut bouger la pièce et flase sinon
 
@@ -240,33 +246,86 @@ class Grid {
     if(!list_of_index.includes(this.xyToIndex(pixel)) && this.cells[this.xyToIndex(pixel)].classList == 'grid-item full' ) {// || = or | ! = not ("not in" in that case with includes) | and = &&
 
     pixel[1] -= 1;
-    console.log('c\'est bon')
     return Boolean(true);
 
     } else {
     
     pixel[1] -= 1
-    console.log('c\'est pas bon')
+    return Boolean(false)
+
+    }
+  }
+
+  piece_left(pixel,list_of_index){ //retourne un booléen true si il y a une pièce autour et false sinon
+
+    pixel[0] -= 1;
+
+    if(!list_of_index.includes(this.xyToIndex(pixel)) && this.cells[this.xyToIndex(pixel)].classList == 'grid-item full' ) {// || = or | ! = not ("not in" in that case with includes) | and = &&
+
+    pixel[0] += 1;
+    return Boolean(true);
+
+    } else {
+    
+    pixel[0] += 1
+    return Boolean(false)
+
+    }
+  }
+
+  piece_right(pixel,list_of_index){ //retourne un booléen true si il y a une pièce autour et false sinon
+
+    pixel[0] += 1;
+
+    if(!list_of_index.includes(this.xyToIndex(pixel)) && this.cells[this.xyToIndex(pixel)].classList == 'grid-item full' ) {// || = or | ! = not ("not in" in that case with includes) | and = &&
+
+    pixel[0] -= 1;
+    return Boolean(true);
+
+    } else {
+    
+    pixel[0] -= 1
     return Boolean(false)
 
     }
   }
   
   canMoveLeft(piece) {
+    let list_of_index = [];
+
+    for(let index of piece){
+      
+      list_of_index.push(this.xyToIndex(index));
+
+    }
+
     for (let pixel of piece) {
-      if (pixel[0] <= 0 || this.isCellFull(pixel[0] - 1, pixel[1])) {
+      console.log('canMoveLeft pixel[0]-1 et pixel[1]:', pixel[0] - 1, pixel[1]);
+      if (pixel[0] <= 0 || this.piece_left(pixel,list_of_index)) {
+        console.log('canMoveLeft : false');
         return false;
       }
     }
+    console.log('canMoveLeft : true');
     return true;
   }
   
   canMoveRight(piece) {
+    let list_of_index = [];
+
+    for(let index of piece){
+      
+      list_of_index.push(this.xyToIndex(index));
+
+    }
+
     for (let pixel of piece) {
-      if (pixel[0] >= 9 || this.isCellFull(pixel[0] + 1, pixel[1])) {
+      if (pixel[0] >= 9 || this.piece_right(pixel,list_of_index)) {
+        console.log('canMoveRight : false');
         return false;
       }
     }
+    console.log('canMoveRight : true');
     return true;
   }
   
@@ -274,10 +333,12 @@ class Grid {
     const index = this.xyToIndex([x, y]);
     //console.log('x:', x, 'y:', y, 'index:', index);
     //console.log('classList:', this.cells[index].classList);
-    return this.cells[index].classList.contains('grid-item full');
+    return this.cells[index].classList ==  '.grid item.full';
   }
   
   clear_blocks(){
+
+  let number_of_line_cleared = 0;
 
   for (var y = 0; y < 22;y++) {
 
@@ -286,7 +347,7 @@ class Grid {
     for (var x = 0; x < 10;x++) {
 
       let index = [x,y];
-      console.log('xy : ',x,y);
+      //console.log('xy : ',x,y);
       if(this.cells[this.xyToIndex(index)].classList == 'grid-item full'){
 
         line ++;
@@ -296,18 +357,17 @@ class Grid {
       //console.log('case remplie ? : ',this.cells[this.xyToIndex(index)].classList == 'grid-item full');
       if(line == 10){
         
-
+        number_of_line_cleared++;
         for (var i = 0; i < 10; i++ ){
-          //console.log('index i et y : ',this.xyToIndex([i,y]));
+          //console.log('in dex i et y : ',this.xyToIndex([i,y]));
           this.emptycell(this.xyToIndex([i,y]));
 
         }
 
-        for (var k = y; k > 0;k--) {
+        for (var k = y; k >= 0;k--) {
 
           for (var i = 0; i < 10; i++ ){
             
-            console.log("k,y et i",k,y,i)
             if(this.cells[this.xyToIndex([i,k])].classList == 'grid-item full'){
 
               this.emptycell(this.xyToIndex([i,k]));
@@ -323,43 +383,51 @@ class Grid {
 
     }
   }
+  this.score_update(number_of_line_cleared)
+ }
+
+ score_update(number_of_line_cleared){
+
+  console.log('score',this.score)
+  if(number_of_line_cleared==1){
+
+    this.score += 50
+    document.getElementById("Score").innerHTML = ("Score : ",this.score);
+    console.log('score updated',this.score)
+
+  }
+
+  if(number_of_line_cleared==2){
+
+    this.score += 100
+    document.getElementById("Score").innerHTML = ("Score : ",this.score);
+
+  }
+
+  if(number_of_line_cleared==3){
+
+    this.score += 200
+    document.getElementById("Score").innerHTML = ("Score : ",this.score);
+
+  }
+
  }
 
 }
 
 function deplacement(e) {
   switch (e.keyCode) {
-    case 81: // Touche gauche
+    case 81: // Touche Q
       deplacerGauche();
       break;
-    case 83: // Touche droite
+    case 68: // Touche D
       deplacerDroite();
       break;
-  }
-}
-
-function deplacerGauche() {
-  if (grille.canMoveLeft(randPiece[grille.currentForm])) {
-    for (let i = 0; i < randPiece[grille.currentForm].length; i++) {
-      grille.emptycell(grille.xyToIndex(randPiece[0][i])); // Vide la cellule avant le déplacement
-      randPiece[grille.currentForm][i][0] -= 1;
-    }
-    grille.affichePiece(randPiece[grille.currentForm]);
-  }
-}
-
-function deplacerDroite() {
-  if (grille.canMoveRight(randPiece[grille.currentForm])) {
-    for (let i = 0; i < randPiece[grille.currentForm].length; i++) {
-      grille.emptycell(grille.xyToIndex(randPiece[0][i])); // Vide la cellule avant le déplacement
-      randPiece[grille.currentForm][i][0] += 1;
-    }
-    grille.affichePiece(randPiece[grille.currentForm]);
-  }
-}
-let i=0;
-function rotation(e) {
-  switch (e.keyCode) {
+    
+    case 83: // Touche S
+      deplacerBas();
+      break;
+    
     case 37: // Touche flèche gauche
       rotationGauche();
       break;
@@ -368,25 +436,93 @@ function rotation(e) {
       break;
   }
 }
-function rotationGauche() {
-  if (grille.currentForm > 0) {
-    grille.currentForm--;
-  } else {
-    grille.currentForm = randPiece.length - 1;
+
+
+async function deplacerBas() {
+  if (grille.can_move(randPiece[grille.currentForm])) {
+    for (let i = 0; i < randPiece[grille.currentForm].length; i++) {
+      grille.emptycell(grille.xyToIndex(randPiece[grille.currentForm][i])); // Vide la cellule avant le déplacement
+      randPiece[grille.currentForm][i][1] += 1;
+    }
+    
+    grille.affichePiece(randPiece[grille.currentForm]);
   }
+}
+
+
+async function deplacerGauche() {
+  if (grille.canMoveLeft(randPiece[grille.currentForm])) {
+    grille.x_counter--;
+    for (let i = 0; i < randPiece[grille.currentForm].length; i++) {
+      grille.emptycell(grille.xyToIndex(randPiece[grille.currentForm][i])); // Vide la cellule avant le déplacement
+      randPiece[grille.currentForm][i][0] -= 1;
+    }
+    
+    grille.affichePiece(randPiece[grille.currentForm]);
+  }
+}
+
+async function deplacerDroite() {
+  if (grille.canMoveRight(randPiece[grille.currentForm])) {
+    grille.x_counter++;
+    for (let i = 0; i < randPiece[grille.currentForm].length; i++) {
+      grille.emptycell(grille.xyToIndex(randPiece[grille.currentForm][i])); // Vide la cellule avant le déplacement
+      randPiece[grille.currentForm][i][0] += 1;
+    }
+    grille.affichePiece(randPiece[grille.currentForm]);
+  }
+}
+
+
+function rotationGauche() {
+  console.log("rotation Gauche");
+  
+  for (let pixel of randPiece[grille.currentForm]) {
+    grille.emptycell(grille.xyToIndex(pixel));
+  }
+      
+  if (grille.currentForm < randPiece.length - 1) { 
+    grille.currentForm++;
+  } 
+  else {
+    grille.currentForm = 0;
+  }
+  for (let pixel of randPiece[grille.currentForm]){
+    console.log("x_counter :",grille.x_counter)
+    console.log("y_counter :",grille.y_counter)
+
+    pixel[0] = grille.x_counter;
+    pixel[1] = grille.y_counter;
+    }
   grille.affichePiece(randPiece[grille.currentForm]);
 }
 
+  
 function rotationDroite() {
-  if (grille.currentForm < randPiece.length - 1) {
-    grille.currentForm++;
-  } else {
-    grille.currentForm = 0;
+  console.log("rotation Droite");
+  
+  for (let pixel of randPiece[grille.currentForm]) {
+    grille.emptycell(grille.xyToIndex(pixel));
   }
+      
+  if (grille.currentForm > 0) { 
+    grille.currentForm--;
+  } 
+  else {
+    grille.currentForm = randPiece.length-1;
+  }
+  for (let pixel of randPiece[grille.currentForm]){
+    console.log("x_counter :",grille.x_counter)
+    console.log("y_counter :",grille.y_counter)
+    
+    pixel[0] = grille.x_counter;
+    pixel[1] = grille.y_counter;
+    }
   grille.affichePiece(randPiece[grille.currentForm]);
 }
 
 document.onkeydown = deplacement;
+
 
 async function main() {
    
@@ -395,21 +531,24 @@ async function main() {
   
   for (var count = 0; count < 40;count++) {
     console.log('counter : ',count)
+    grille.y_counter = 0;
+    grille.x_counter = 0;
+    grille.currentForm = 0;
     
-     randPiece = JSON.parse(JSON.stringify(grille.pieces.liste_pieces[RandInt(7)])); // Assignation de randPiece
-     console.log(grille.cells[6].classList == 'grid-item')
+    randPiece = JSON.parse(JSON.stringify(grille.pieces.liste_pieces[RandInt(7)])); // Assignation de randPiece
+    //randPiece = JSON.parse(JSON.stringify(grille.pieces.liste_pieces[6]));
+
+    console.log(grille.cells[6].classList == 'grid-item')
 
     while (grille.can_move(randPiece[grille.currentForm])) { 
-      grille.y_counter = 0;
-      grille.x_counter = 0;
-      grille.currentForm = 0;
+      //let debugPiece = randPiece[grille.currentForm].map(pixel => pixel[1]++); 
       await grille.affichePiece(randPiece[grille.currentForm]);
       //console.log(randPiece[0][0])
       //console.log('Fonction canmove : ', grille.can_move(randPiece[0]))
       await sleep(200);
       randPiece = grille.y_piece_modif(randPiece);
       console.log("randPiece :",randPiece);
-      await grille.affichePiece(randPiece[currentForm]);
+      await grille.affichePiece(randPiece[grille.currentForm]);
       
       await sleep(200);
     }
