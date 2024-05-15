@@ -9,6 +9,7 @@ document.head.appendChild(script);
 let grille; // Déclaration de la variable grille
 let randPiece; // Déclaration de la variable randPiece
 let currentForm = 0;
+let p = 0;
 
 class Pieces {
   constructor() {
@@ -147,7 +148,22 @@ function RandInt(max) {
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-};
+}
+
+async function Pause() { 
+
+  if(p==1){p-=1}else{p+=1}
+  console.log("p var = ",p)
+  
+}
+
+function pause_verif() { 
+
+  if(p==1){
+    return false
+  }else{return true}
+  
+}
 
 // Declaration classe de la grille de jeu
 class Grid {
@@ -197,9 +213,10 @@ class Grid {
               if (pixel[1] < this.height - 1) { // Si on est pas en bas
                   this.emptycell(this.xyToIndex(pixel)); // 'éteint' le pixel actuel
                   pixel[1]++;
-                  this.y_counter++;
+                  
               }
           }
+          this.y_counter++;
 
       }
             
@@ -300,13 +317,10 @@ class Grid {
     }
 
     for (let pixel of piece) {
-      console.log('canMoveLeft pixel[0]-1 et pixel[1]:', pixel[0] - 1, pixel[1]);
       if (pixel[0] <= 0 || this.piece_left(pixel,list_of_index)) {
-        console.log('canMoveLeft : false');
         return false;
       }
     }
-    console.log('canMoveLeft : true');
     return true;
   }
   
@@ -399,16 +413,23 @@ class Grid {
 
   if(number_of_line_cleared==2){
 
-    this.score += 100
+    this.score += 150
     document.getElementById("Score").innerHTML = ("Score : ",this.score);
 
   }
 
   if(number_of_line_cleared==3){
 
-    this.score += 200
+    this.score += 300
     document.getElementById("Score").innerHTML = ("Score : ",this.score);
+    
+  }
 
+  if(number_of_line_cleared==4){
+
+    this.score += 1000
+    document.getElementById("Score").innerHTML = ("Score : ",this.score);
+    
   }
 
  }
@@ -491,8 +512,35 @@ function rotationGauche() {
     console.log("x_counter :",grille.x_counter)
     console.log("y_counter :",grille.y_counter)
 
-    pixel[0] = grille.x_counter;
-    pixel[1] = grille.y_counter;
+    pixel[0] += grille.x_counter;
+
+    if(pixel[0]<0){
+
+      while (pixel[0]<0){
+
+        for (let pixel of randPiece[grille.currentForm]){
+
+          pixel[0]++
+
+        }
+      }
+
+    }
+
+    else if (pixel[0]>9){
+
+      while (pixel[0]>9){
+
+        for (let pixel of randPiece[grille.currentForm]){
+
+          pixel[0]--
+
+        }
+      }
+
+    }
+
+    pixel[1] += grille.y_counter;
     }
   grille.affichePiece(randPiece[grille.currentForm]);
 }
@@ -512,12 +560,45 @@ function rotationDroite() {
     grille.currentForm = randPiece.length-1;
   }
   for (let pixel of randPiece[grille.currentForm]){
-    console.log("x_counter :",grille.x_counter)
-    console.log("y_counter :",grille.y_counter)
+    console.log("x_counter :",grille.x_counter);
+    console.log("y_counter :",grille.y_counter);
+    console.log("pixel rotate :",grille.xyToIndex(pixel));
     
-    pixel[0] = grille.x_counter;
-    pixel[1] = grille.y_counter;
+    pixel[0] += grille.x_counter;
+    if(pixel[0]<0){
+
+      while (pixel[0]<0){
+
+        for (let pixel of randPiece[grille.currentForm]){
+
+          pixel[0]++
+
+        }
+      }
+
     }
+
+    else if (pixel[0]>9){
+
+      while (pixel[0]>9){
+
+        for (let pixel of randPiece[grille.currentForm]){
+
+          pixel[0]--
+
+        }
+      }
+
+    }
+    pixel[1] += grille.y_counter;
+    console.log("pixel[0] :",pixel[0]);
+    }
+
+/*/
+  if (grille.currentForm > 0) { 
+    grille.currentForm--;
+  } 
+/*/
   grille.affichePiece(randPiece[grille.currentForm]);
 }
 
@@ -529,8 +610,7 @@ async function main() {
    grille = new Grid(); // Initialisation de la grille
    await sleep(1500); //j'ai mis ça la parce que la page met du temps à se charger et le temps qu'elle se charge la piece est déja descendu de deux lignes sans
   
-  for (var count = 0; count < 40;count++) {
-    console.log('counter : ',count)
+    while (true){
     grille.y_counter = 0;
     grille.x_counter = 0;
     grille.currentForm = 0;
@@ -539,23 +619,32 @@ async function main() {
     //randPiece = JSON.parse(JSON.stringify(grille.pieces.liste_pieces[6]));
 
     console.log(grille.cells[6].classList == 'grid-item')
+    
+    
+      if(grille.can_move(randPiece[grille.currentForm])){
+        while (grille.can_move(randPiece[grille.currentForm])) { 
+          //let debugPiece = randPiece[grille.currentForm].map(pixel => pixel[1]++); 
+          if(pause_verif()){
+          console.log("y_counter : ",grille.y_counter);
+          await grille.affichePiece(randPiece[grille.currentForm]); 
+          //console.log(randPiece[0][0])
+          //console.log('Fonction canmove : ', grille.can_move(randPiece[0]))
+          await sleep(200);
+          randPiece = grille.y_piece_modif(randPiece);
+          console.log("randPiece :",randPiece);
+          await grille.affichePiece(randPiece[grille.currentForm]);
 
-    while (grille.can_move(randPiece[grille.currentForm])) { 
-      //let debugPiece = randPiece[grille.currentForm].map(pixel => pixel[1]++); 
-      await grille.affichePiece(randPiece[grille.currentForm]);
-      //console.log(randPiece[0][0])
-      //console.log('Fonction canmove : ', grille.can_move(randPiece[0]))
-      await sleep(200);
-      randPiece = grille.y_piece_modif(randPiece);
-      console.log("randPiece :",randPiece);
-      await grille.affichePiece(randPiece[grille.currentForm]);
-      
-      await sleep(200);
+          await sleep(200);
+          }else{await sleep(1000)}
+        }
+      grille.clear_blocks();
+      }
+      else{
+        console.log("taperdu");
+        break;
+      }
     }
-    grille.clear_blocks()
   }
-   
-}
 
 
 main();
