@@ -6,10 +6,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, inititial-scale=1.0 ">
   <link rel="stylesheet" href="{{ url_for('static', filename='Style.css') }}" >
-  <title>FLask test</title>
+  <title>TETRIS ONLINE</title>
 
 </head>
 <body>
+  <div class="score-area"><p>Score : <p id="Score">0</p></p></div>
+  <div class="pause" onclick="Pause()"><p>Pause</p></div>
   <div class="container">
     <div class="line">
       <div class="grid-item"></div>
