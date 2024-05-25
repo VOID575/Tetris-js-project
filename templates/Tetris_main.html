@@ -6,12 +6,45 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, inititial-scale=1.0 ">
   <link rel="stylesheet" href="{{ url_for('static', filename='Style.css') }}" >
-  <title>TETRIS ONLINE</title>
+  <title>TETRIS</title>
 
 </head>
 <body>
   <div class="score-area"><p>Score : <p id="Score">0</p></p></div>
-  <div class="pause" onclick="Pause()"><p>Pause</p></div>
+  <div class="pause" onclick="Pause()"><p>PAUSE</p></div>
+  <div class="new_game" onclick="New_game()"><p>New Game</p></div>
+
+  <div class="ranking"><p>Classement :</p>
+    <table id="rankArray">
+      <thead>
+        <tr>
+          
+          <th>Rang</th>
+          <th>Nom</th>
+          <th>Score</th>
+          
+        
+        </tr>
+      </thead>
+      
+      <tbody> </tbody>
+    </table>
+  </div>
+
+  <div id="gameOverModal" class="modal">
+    
+    <div class="modal-content">
+      <h2>Game Over</h2>
+      <h3>Score :<h3 id="scoreNumber"></h3></h3>
+      <p>Votre partie est terminée. Entrez votre nom pour enregistrer votre score :</p>
+      <input type="text" id="playerName" placeholder="Entrez votre nom">
+      <button id="saveScoreButton">Enregistrer le score</button>
+      <button onclick="New_game()">New Game</button>
+    </div>
+
+  </div>
+
+
   <div class="container">
     <div class="line">
       <div class="grid-item"></div>
@@ -292,7 +325,6 @@
     </div>
   </div>
 
-  <script type="module" src="{{ url_for('static', filename='matrice_piece.js') }}"></script>
   <script src="{{ url_for('static', filename='main.js') }}"></script>
 
 </body>
