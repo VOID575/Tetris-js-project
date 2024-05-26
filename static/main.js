@@ -444,7 +444,15 @@ class Grid {
 
 function deplacement(e) {
   if(p==1){
-    return None
+    switch (e.keyCode) {
+      case 27:
+          Pause();
+          break;
+          
+      case 82 :
+        New_game();
+        break;
+    }
   }else{
     switch (e.keyCode) {
       case 81: // Touche Q
