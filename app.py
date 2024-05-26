@@ -1,6 +1,5 @@
 from flask import Flask, render_template
 from flask_cors import CORS
-from markupsafe import escape
 
 app = Flask(__name__)
 CORS(app)
